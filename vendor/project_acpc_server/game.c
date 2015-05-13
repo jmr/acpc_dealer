@@ -1331,6 +1331,7 @@ static int printAllHoleCards( const Game *game, const State *state,
 
 static int printPlayerHoleCards( const Game *game, const State *state,
 				 const uint8_t player,
+				 const int forceShowFoldedCards,
 				 const int maxLen, char *string )
 {
   int p, c, r;
@@ -1350,18 +1351,20 @@ static int printPlayerHoleCards( const Game *game, const State *state,
 
     if( p != player ) {
       /* don't print other player's cards unless there was a showdown
-          and they didn't fold */
+          and (they didn't fold or we are showing all folded cards) */
 
       if( !stateFinished( state ) ) {
 	continue;
       }
 
-      if( state->playerFolded[ p ] ) {
-	continue;
-      }
+      if( !forceShowFoldedCards ) {
+	if( state->playerFolded[ p ] ) {
+	  continue;
+	}
 
-      if( numFolded( game, state ) + 1 == game->numPlayers ) {
-	continue;
+	if( numFolded( game, state ) + 1 == game->numPlayers ) {
+	  continue;
+	}
       }
     }
 
@@ -1609,6 +1612,7 @@ int printState( const Game *game, const State *state,
 }
 
 int printMatchState( const Game *game, const MatchState *state,
+		     const int forceShowFoldedCards,
 		     const int maxLen, char *string )
 {
   int c, r;
@@ -1632,7 +1636,7 @@ int printMatchState( const Game *game, const MatchState *state,
 
   /* MATCHSTATE:player:handId:betting:holeCards */
   r = printPlayerHoleCards( game, &state->state, state->viewingPlayer,
-			    maxLen - c, &string[ c ] );
+			    forceShowFoldedCards, maxLen - c, &string[ c ] );
   if( r < 0 ) {
     return -1;
   }

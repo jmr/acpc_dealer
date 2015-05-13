@@ -212,6 +212,7 @@ int printState( const Game *game, const State *state,
    returns the number of characters in string, or -1 on error
    DOES NOT COUNT FINAL 0 TERMINATOR IN THIS COUNT!!! */
 int printMatchState( const Game *game, const MatchState *state,
+		     const int forceShowFoldedCards,
 		     const int maxLen, char *string );
 
 /* read an action, returning the action in the passed pointer

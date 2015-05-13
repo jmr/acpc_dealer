@@ -212,14 +212,15 @@ static uint8_t playerToSeat( const Game *game, const uint8_t player0Seat,
 
 /* returns >= 0 if match should continue, -1 for failure */
 static int sendPlayerMessage( const Game *game, const MatchState *state,
-			      const int quiet, const uint8_t seat,
-			      const int seatFD, struct timeval *sendTime )
+			      const int quiet, const int forceShowFoldedCards,
+			      const uint8_t seat, const int seatFD,
+			      struct timeval *sendTime )
 {
   int c;
   char line[ MAX_LINE_LEN ];
 
   /* prepare the message */
-  c = printMatchState( game, state, MAX_LINE_LEN, line );
+  c = printMatchState( game, state, forceShowFoldedCards, MAX_LINE_LEN, line );
   if( c < 0 || c > MAX_LINE_LEN - 3 ) {
     /* message is too long */
 
@@ -718,6 +719,7 @@ static int printFinalMessage( const Game *game, char *seatName[ MAX_PLAYERS ],
    returns >=0 if the match finished correctly, -1 on error */
 static int gameLoop( const Game *game, char *seatName[ MAX_PLAYERS ],
 		     const uint32_t numHands, const int quiet,
+		     const int forceShowFoldedCards,
 		     const int fixedSeats, rng_state_t *rng,
 		     ErrorInfo *errorInfo, const int seatFD[ MAX_PLAYERS ],
 		     ReadBuf *readBuf[ MAX_PLAYERS ],
@@ -791,8 +793,9 @@ static int gameLoop( const Game *game, char *seatName[ MAX_PLAYERS ],
       for( seat = 0; seat < game->numPlayers; ++seat ) {
 
 	state.viewingPlayer = seatToPlayer( game, player0Seat, seat );
-	if( sendPlayerMessage( game, &state, quiet, seat,
-			       seatFD[ seat ], &t ) < 0 ) {
+	if( sendPlayerMessage( game, &state, quiet,
+			       0 /* forceShowFoldedCards */,
+			       seat, seatFD[ seat ], &t ) < 0 ) {
 	  /* error messages already handled in function */
 
 	  return -1;
@@ -853,8 +856,8 @@ static int gameLoop( const Game *game, char *seatName[ MAX_PLAYERS ],
     for( seat = 0; seat < game->numPlayers; ++seat ) {
 
       state.viewingPlayer = seatToPlayer( game, player0Seat, seat );
-      if( sendPlayerMessage( game, &state, quiet, seat,
-			     seatFD[ seat ], &t ) < 0 ) {
+      if( sendPlayerMessage( game, &state, quiet, forceShowFoldedCards,
+			     seat, seatFD[ seat ], &t ) < 0 ) {
 	/* error messages already handled in function */
 
 	return -1;
@@ -914,6 +917,7 @@ int main( int argc, char **argv )
   char *seatName[ MAX_PLAYERS ];
 
   int useLogFile, useTransactionFile;
+  int forceShowFoldedCards;
   uint64_t maxResponseMicros, maxUsedHandMicros, maxUsedPerHandMicros;
   int64_t startTimeoutMicros;
   uint32_t numHands, seed, maxInvalidActions;
@@ -948,6 +952,8 @@ int main( int argc, char **argv )
   useLogFile = 1;
   useTransactionFile = 0;
 
+  forceShowFoldedCards = 0;
+
   /* print all messages */
   quiet = 0;
 
@@ -963,7 +969,7 @@ int main( int argc, char **argv )
   /* parse options */
   while( 1 ) {
 
-    i = getopt_long( argc, argv, "flLp:qtTa", longOptions, &longOpt );
+    i = getopt_long( argc, argv, "flLp:qtTsSa", longOptions, &longOpt );
     if( i < 0 ) {
 
       break;
@@ -1079,6 +1085,18 @@ int main( int argc, char **argv )
       /* use transactionFile */
 
       useTransactionFile = 1;
+      break;
+
+    case 's':
+      /* don't force showing folded cards */
+
+      forceShowFoldedCards = 0;
+      break;
+
+    case 'S':
+      /* force showing folded cards */
+
+      forceShowFoldedCards = 1;
       break;
 
     case 'a':
@@ -1268,7 +1286,8 @@ int main( int argc, char **argv )
   }
 
   /* play the match */
-  if( gameLoop( game, seatName, numHands, quiet, fixedSeats, &rng, &errorInfo,
+  if( gameLoop( game, seatName, numHands, quiet, forceShowFoldedCards,
+		fixedSeats, &rng, &errorInfo,
 		seatFD, readBuf, logFile, transactionFile ) < 0 ) {
     /* should have already printed an error message */
 
