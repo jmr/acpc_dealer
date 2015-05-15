@@ -1658,7 +1658,7 @@ int readAction( const char *string, const Game *game, Action *action )
   int c, r;
 
   action->type = charToAction[ (uint8_t)string[ 0 ] ];
-  if( action->type < 0 ) {
+  if( action->type == a_invalid ) {
     return -1;
   }
   c = 1;
