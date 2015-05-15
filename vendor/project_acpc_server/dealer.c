@@ -245,8 +245,8 @@ static int sendPlayerMessage( const Game *game, const MatchState *state,
 
   /* log the message */
   if( !quiet ) {
-    fprintf( stderr, "TO %d at %zu.%.06zu %s", seat + 1,
-	     sendTime->tv_sec, sendTime->tv_usec, line );
+    fprintf( stderr, "TO %d at %"PRIu64".%.06"PRIu64" %s", seat + 1,
+	     (uint64_t) sendTime->tv_sec, (uint64_t) sendTime->tv_usec, line );
   }
 
   return 0;
@@ -298,8 +298,9 @@ static int readPlayerResponse( const Game *game,
 
     /* log the response */
     if( !quiet ) {
-      fprintf( stderr, "FROM %d at %zu.%06zu %s", seat + 1,
-	       recvTime->tv_sec, recvTime->tv_usec, line );
+      fprintf( stderr, "FROM %d at %"PRIu64".%06"PRIu64" %s", seat + 1,
+	       (uint64_t) recvTime->tv_sec, (uint64_t) recvTime->tv_usec,
+	       line );
     }
 
     /* ignore comments */
@@ -403,6 +404,9 @@ static int processTransactionFile( const Game *game, const int fixedSeats,
   uint32_t h;
   uint8_t s;
   Action action;
+  /* There are no SCN* format macros for timeval component types,
+   * so first read into uint64_ts. */
+  uint64_t send_sec, send_usec, recv_sec, recv_usec;
   struct timeval sendTime, recvTime;
   char line[ MAX_LINE_LEN ];
 
@@ -419,13 +423,17 @@ static int processTransactionFile( const Game *game, const int fixedSeats,
     }
 
     /* ACTION HANDID SEND RECV */
-    if( sscanf( &line[ c ], " %"SCNu32" %zu.%06zu %zu.%06zu%n", &h,
-		&sendTime.tv_sec, &sendTime.tv_usec,
-		&recvTime.tv_sec, &recvTime.tv_usec, &r ) < 4 ) {
+    if( sscanf( &line[ c ],
+		" %"SCNu32" %"SCNu64".%06"SCNu64" %"SCNu64".%06"SCNu64"%n",
+		&h, &send_sec, &send_usec, &recv_sec, &recv_usec, &r ) < 4 ) {
 
       fprintf( stderr, "ERROR: could not parse transaction stamp %s", line );
       return -1;
     }
+    sendTime.tv_sec = send_sec;
+    sendTime.tv_usec = send_usec;
+    recvTime.tv_sec = recv_sec;
+    recvTime.tv_usec = recv_usec;
     c += r;
 
     /* check that we're processing the expected handId */
@@ -496,9 +504,10 @@ static int logTransaction( const Game *game, const State *state,
   }
 
   r = snprintf( &line[ c ], MAX_LINE_LEN - c,
-		" %"PRIu32" %zu.%06zu %zu.%06zu\n",
-		state->handId, sendTime->tv_sec, sendTime->tv_usec,
-		recvTime->tv_sec, recvTime->tv_usec );
+		" %"PRIu32" %"PRIu64".%06"PRIu64" %"PRIu64".%06"PRIu64"\n",
+		state->handId,
+		(uint64_t) sendTime->tv_sec, (uint64_t) sendTime->tv_usec,
+		(uint64_t) recvTime->tv_sec, (uint64_t) recvTime->tv_usec );
   if( r < 0 ) {
 
     fprintf( stderr, "ERROR: transaction message too long\n" );
@@ -742,8 +751,8 @@ static int gameLoop( const Game *game, char *seatName[ MAX_PLAYERS ],
 
   gettimeofday( &sendTime, NULL );
   if( !quiet ) {
-    fprintf( stderr, "STARTED at %zu.%06zu\n",
-	     sendTime.tv_sec, sendTime.tv_usec );
+    fprintf( stderr, "STARTED at %"PRIu64".%06"PRIu64"\n",
+	     (uint64_t) sendTime.tv_sec, (uint64_t) sendTime.tv_usec );
   }
 
   /* start at the first hand */
@@ -887,8 +896,8 @@ static int gameLoop( const Game *game, char *seatName[ MAX_PLAYERS ],
   /* print out the final values */
   if( !quiet ) {
     gettimeofday( &t, NULL );
-    fprintf( stderr, "FINISHED at %zu.%06zu\n",
-	     sendTime.tv_sec, sendTime.tv_usec );
+    fprintf( stderr, "FINISHED at %"PRIu64".%06"PRIu64"\n",
+	     (uint64_t) sendTime.tv_sec, (uint64_t) sendTime.tv_usec );
   }
   if( printFinalMessage( game, seatName, totalValue, logFile ) < 0 ) {
     /* error messages already handled in function */
