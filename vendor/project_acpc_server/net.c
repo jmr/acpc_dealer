@@ -50,10 +50,10 @@ ssize_t getLine( ReadBuf *readBuf,
   struct timeval start, tv;
 
   /* reserve space for string terminator */
-  --maxLen;
-  if( maxLen < 0 ) {
+  if( maxLen == 0 ) {
     return -1;
   }
+  --maxLen;
 
   /* read the line */
   haveStartTime = 0;
