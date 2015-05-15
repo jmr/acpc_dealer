@@ -10,7 +10,7 @@ Copyright (C) 2013 by the Computer Poker Research Group, University of Alberta
 #include <assert.h>
 
 #include <CException.h>
-void print_and_throw_error(const char const *message)
+void print_and_throw_error(const char *message)
 {
   fprintf(stderr, "ERROR: %s", message);
   Throw(1);
@@ -38,7 +38,7 @@ static bool doublesAboutEqual(double d1, double d2) {
     return !((diff * 0.0 != 0.0) || (delta < diff));
 }
 
-static bool is_3p_kuhn_poker_game(const Game const *game_def)
+static bool is_3p_kuhn_poker_game(const Game *game_def)
 {
   assert(game_def);
   return (
