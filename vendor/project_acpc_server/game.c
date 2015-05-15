@@ -260,7 +260,7 @@ Game *readGame( FILE *file )
 
   if( stackRead < game->numPlayers ) {
 
-    fprintf( stderr, "only read %"PRIu8" stack sizes, need %"PRIu8"\n",
+    fprintf( stderr, "only read %d stack sizes, need %"PRIu8"\n",
 	    stackRead, game->numPlayers );
     free( game );
     return NULL;
@@ -268,7 +268,7 @@ Game *readGame( FILE *file )
 
   if( blindRead < game->numPlayers ) {
 
-    fprintf( stderr, "only read %"PRIu8" blinds, need %"PRIu8"\n",
+    fprintf( stderr, "only read %d blinds, need %"PRIu8"\n",
 	    blindRead, game->numPlayers );
     free( game );
     return NULL;
@@ -286,7 +286,7 @@ Game *readGame( FILE *file )
   if( game->bettingType == limitBetting
       && raiseSizeRead < game->numRounds ) {
 
-    fprintf( stderr, "only read %"PRIu8" raise sizes, need %"PRIu8"\n",
+    fprintf( stderr, "only read %d raise sizes, need %"PRIu8"\n",
 	     raiseSizeRead, game->numRounds );
     free( game );
     return NULL;
@@ -330,7 +330,7 @@ Game *readGame( FILE *file )
 
   if( boardCardsRead < game->numRounds ) {
 
-    fprintf( stderr, "only read %"PRIu8" board card numbers, need %"PRIu8"\n",
+    fprintf( stderr, "only read %d board card numbers, need %"PRIu8"\n",
 	    boardCardsRead, game->numRounds );
     free( game );
     return NULL;
@@ -399,7 +399,7 @@ void printGame( FILE *file, const Game *game )
 
       fprintf( file, "firstPlayer =" );
       for( i = 0; i < game->numRounds; ++i ) {
-	fprintf( file, " %"PRIu8, game->firstPlayer[ i ] + 1 );
+	fprintf( file, " %d", game->firstPlayer[ i ] + 1 );
       }
       fprintf( file, "\n" );
 

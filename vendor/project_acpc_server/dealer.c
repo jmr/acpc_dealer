@@ -235,7 +235,7 @@ static int sendPlayerMessage( const Game *game, const MatchState *state,
   if( write( seatFD, line, c ) != c ) {
     /* couldn't send the line */
 
-    fprintf( stderr, "ERROR: could not send state to seat %"PRIu8"\n",
+    fprintf( stderr, "ERROR: could not send state to seat %d\n",
 	     seat + 1 );
     return -1;
   }
@@ -282,7 +282,7 @@ static int readPlayerResponse( const Game *game,
       uint64_t micros_spent =
 	(uint64_t)( after.tv_sec - start.tv_sec ) * 1000000
 	+ ( after.tv_usec - start.tv_usec );
-      fprintf( stderr, "ERROR: could not get action from seat %"PRIu8"\n",
+      fprintf( stderr, "ERROR: could not get action from seat %d\n",
 	       seat + 1 );
       // Print out how much time has passed so we can see if this was a
       // timeout as opposed to some other sort of failure (e.g., socket
@@ -310,7 +310,7 @@ static int readPlayerResponse( const Game *game,
     /* check for any timeout issues */
     if( checkErrorTimes( seat, sendTime, recvTime, errorInfo ) < 0 ) {
 
-      fprintf( stderr, "ERROR: seat %"PRIu8" ran out of time\n", seat + 1 );
+      fprintf( stderr, "ERROR: seat %d ran out of time\n", seat + 1 );
       return -1;
     }
 
@@ -448,7 +448,7 @@ static int processTransactionFile( const Game *game, const int fixedSeats,
     if( checkErrorTimes( s, &sendTime, &recvTime, errorInfo ) < 0 ) {
 
       fprintf( stderr,
-	       "ERROR: seat %"PRIu8" ran out of time in transaction file\n",
+	       "ERROR: seat %d ran out of time in transaction file\n",
 	       s + 1 );
       return -1;
     }
@@ -527,7 +527,7 @@ static int checkVersion( const uint8_t seat,
   if( getLine( readBuf, MAX_LINE_LEN, line, -1 ) <= 0 ) {
 
     fprintf( stderr,
-	     "ERROR: could not read version string from seat %"PRIu8"\n",
+	     "ERROR: could not read version string from seat %d\n",
 	     seat + 1 );
     return -1;
   }
